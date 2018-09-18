@@ -53,5 +53,5 @@ before_script:
 
 script:
   - run-prove dexador-test.asd
-  - run-prove dexador-proxy-test.asd
+  - run-prove dexador-test-proxy.asd
   #- benchmark/bench
