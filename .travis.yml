@@ -7,6 +7,7 @@ env:
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
     - COVERAGE_EXCLUDE=t
   matrix:
+    # - LISP=sbcl-bin COVERALLS=true
     - LISP=sbcl-bin COVERALLS=true
     - LISP=ccl-bin
 
@@ -26,10 +27,15 @@ install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
   # nginx
   - curl -L http://nginx.org/download/nginx-1.8.0.tar.gz | tar xzf -
-  - (cd nginx-1.8.0 && ./configure --prefix=$HOME/nginx && make && make install)
+  - (cd nginx-1.8.0 && ./configure --prefix=$HOME/nginx --with-http_ssl_module && make && make install)
   # prove
   - ros install prove
   - ros install fukamachi/clack
+  # proxy
+  - openssl req -x509 -nodes -new -keyout $HOME/server.key -out $HOME/server.crt -days 365 -subj "/C=JP/ST=Tokyo/L=Shinagawa/O=test/OU=test/CN=dexador"
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install squid3 apache2-utils
+  - htpasswd -b -c $HOME/squid-passwd testuser testpass
 
 cache:
   directories:
@@ -38,10 +44,14 @@ cache:
     - $HOME/.config/common-lisp
 
 before_script:
-  - nginx -c "$TRAVIS_BUILD_DIR/t/nginx.conf" -p "$HOME/nginx"
+  - nginx -c "$TRAVIS_BUILD_DIR/t/nginx-proxy.conf" -p "$HOME/nginx"
+  - sudo squid3 -f "$TRAVIS_BUILD_DIR/t/squid.conf"
+  - sudo squid3 -f "$TRAVIS_BUILD_DIR/t/squid-auth.conf"
   - ros --version
   - ros config
+  - cp -R $TRAVIS_BUILD_DIR/benchmark $HOME
 
 script:
   - run-prove dexador-test.asd
-  - benchmark/bench
+  - run-prove dexador-proxy-test.asd
+  #- benchmark/bench
