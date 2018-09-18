@@ -31,6 +31,7 @@
         (dex:get *HTTP*)
       (is code 200)
       (is body BODY)
+      (is (gethash "content-length" headers) 181))))
 
 (subtest "HTTPS without proxy"
   (subtest "GET"
@@ -39,7 +40,6 @@
                  :insecure T)
       (is code 200)
       (is body BODY)
-      (is (gethash "content-length" headers) 181))))
       (is (gethash "content-length" headers) 181))))
 
 (subtest "HTTP with no auth proxy"
