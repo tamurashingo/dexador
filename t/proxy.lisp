@@ -23,6 +23,8 @@
 </html>
 ")
 
+(plan 6)
+
 (subtest "HTTP without proxy"
   (subtest "GET"
     (multiple-value-bind (body code headers)
@@ -77,3 +79,5 @@
       (is code 200)
       (is body BODY)
       (is (gethash "content-length" headers) 181))))
+
+(finalize)
